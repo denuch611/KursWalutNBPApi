@@ -7,6 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace KursWalutNBPApi
 {
@@ -54,25 +60,51 @@ namespace KursWalutNBPApi
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox6.Text))
             {
-                textBox6.AppendText(comboBox1.Text);
-                comboBox2.Items.Add("zł -> " + comboBox1.Text);
-                comboBox2.Items.Add(comboBox1.Text + " -> zł");
-            }
-            else
-            {
-                textBox6.Clear();
-                
-                comboBox2.Items.Add("zł -> " + comboBox1.Text);
-                comboBox2.Items.Add(comboBox1.Text + " ->zł");
-                textBox6.AppendText(comboBox1.Text);
+                var url = "http://api.nbp.pl/api/.";
+                var table = "A";
+                var code = "EUR";
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri(url);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                HttpResponseMessage response = client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/today/").Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    //  string lista2 = response.Content;
+                    string lista = response.Content.ReadAsStringAsync().Result;
+                    //    foreach (dynamic cena in ListaKurs)
+                    Console.WriteLine(lista);
+                    foreach (dynamic cena in lista.)
+                    {
+                        Console.WriteLine(cena.mid);
+                      
+
+
+
+                        if (string.IsNullOrEmpty(textBox6.Text))
+                        {
+                            textBox6.AppendText("");
+                            comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
+                            comboBox2.Items.Add(comboBox1.Text + " -> ZŁOTY");
+                        }
+                        else
+                        {
+                            textBox6.Clear();
+
+                            comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
+                            comboBox2.Items.Add(comboBox1.Text + " ->ZŁOTY");
+                            textBox6.AppendText(comboBox1.Text);
+                        }
+                    }
+                }
             }
         }
-
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
 
         }
+
+
     }
 }
