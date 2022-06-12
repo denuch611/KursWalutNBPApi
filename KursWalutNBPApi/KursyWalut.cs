@@ -13,11 +13,19 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace KursWalutNBPApi
 {
     public partial class KursyWalut : Form
     {
+        public class Rates
+        {
+            public double mid { get; set; }
+            public string Currency { get; set; }
+            public string Code { get; set; }
+            public IList<Rates>? rates { get; set; }
+        }
         public KursyWalut()
         {
             InitializeComponent();
@@ -45,12 +53,12 @@ namespace KursWalutNBPApi
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
+
         }
 
         private void comboBox1_SelectedIndexChanged_1(object sender, EventArgs e)
         {
-            
+
         }
 
         private void textBox6_TextChanged(object sender, EventArgs e)
@@ -58,33 +66,36 @@ namespace KursWalutNBPApi
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
+
         {
+
             {
+
                 var url = "http://api.nbp.pl/api/.";
                 var table = "A";
                 var code = "EUR";
+                //substring musze zrobic na euro
+                var date = "2022-06-10";
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(url);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                HttpResponseMessage response = client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/today/").Result;
+                HttpResponseMessage response = await client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}/");
+                //     HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}/");  
+                //            HttpResponseMessage response = client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/today/").Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    //  string lista2 = response.Content;
-                    string lista = response.Content.ReadAsStringAsync().Result;
-                    //    foreach (dynamic cena in ListaKurs)
-                    Console.WriteLine(lista);
-                    foreach (dynamic cena in lista.)
+
+                    //    var lista2 = response.Content.Headers;
+                    var Waluta = await response.Content.ReadAsStringAsync();
+                    //    Wartosci[] json = JsonSerializer.Deserialize<Wartosci[]>(Waluta);
+                    var rates = JsonConvert.DeserializeObject<Rates>(Waluta);
+                    foreach (var item in rates.rates)
                     {
-                        Console.WriteLine(cena.mid);
-                      
-
-
 
                         if (string.IsNullOrEmpty(textBox6.Text))
                         {
-                            textBox6.AppendText("");
+                            textBox6.AppendText(item.mid.ToString());
                             comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
                             comboBox2.Items.Add(comboBox1.Text + " -> ZŁOTY");
                         }
@@ -94,17 +105,12 @@ namespace KursWalutNBPApi
 
                             comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
                             comboBox2.Items.Add(comboBox1.Text + " ->ZŁOTY");
-                            textBox6.AppendText(comboBox1.Text);
+                            textBox6.AppendText(item.mid.ToString());
                         }
                     }
                 }
             }
         }
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-
     }
 }
+     
