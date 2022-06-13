@@ -14,11 +14,23 @@ using System.Text.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
+
 
 namespace KursWalutNBPApi
 {
     public partial class KursyWalut : Form
     {
+        [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn
+      (
+          int nLeftRect,     // x-coordinate of upper-left corner
+          int nTopRect,      // y-coordinate of upper-left corner
+          int nRightRect,    // x-coordinate of lower-right corner
+          int nBottomRect,   // y-coordinate of lower-right corner
+          int nWidthEllipse, // height of ellipse
+          int nHeightEllipse // width of ellipse
+      );
         public class Rates
         {
             public double mid { get; set; }
@@ -29,6 +41,10 @@ namespace KursWalutNBPApi
         public KursyWalut()
         {
             InitializeComponent();
+
+            this.FormBorderStyle = FormBorderStyle.None;
+            Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 30, 30));
+
             comboBox1.Items.Add("USD - dolar amerykański");
             comboBox1.Items.Add("AUD - dolar australijski");
             comboBox1.Items.Add("CAD - dolar kanadyjski");
@@ -41,54 +57,27 @@ namespace KursWalutNBPApi
             comboBox1.Items.Add("NOK - korona norweska");
             comboBox1.Items.Add("SEK - korona szwedzka");
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
-
-
-        }
-
-
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
+            comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
 
         }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox1_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox6_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private async void button2_Click(object sender, EventArgs e)
 
         {
-
+            comboBox2.Items.Add("Kalkulator");
             {
 
                 var url = "http://api.nbp.pl/api/.";
                 var table = "A";
-                var code = "EUR";
-                //substring musze zrobic na euro
+                var code = comboBox1.Text.Substring(0,3);
                 var date = "2022-06-10";
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(url);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}/");
-                //     HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}/");  
-                //            HttpResponseMessage response = client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/today/").Result;
                 if (response.IsSuccessStatusCode)
                 {
-
-                    //    var lista2 = response.Content.Headers;
                     var Waluta = await response.Content.ReadAsStringAsync();
-                    //    Wartosci[] json = JsonSerializer.Deserialize<Wartosci[]>(Waluta);
                     var rates = JsonConvert.DeserializeObject<Rates>(Waluta);
                     foreach (var item in rates.rates)
                     {
@@ -96,21 +85,94 @@ namespace KursWalutNBPApi
                         if (string.IsNullOrEmpty(textBox6.Text))
                         {
                             textBox6.AppendText(item.mid.ToString());
+                            comboBox2.Items.Clear();
+                            comboBox3.Items.Clear();
                             comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
-                            comboBox2.Items.Add(comboBox1.Text + " -> ZŁOTY");
+                            comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
                         }
                         else
                         {
                             textBox6.Clear();
-
+                            comboBox2.Items.Clear();
+                            comboBox3.Items.Clear();
                             comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
-                            comboBox2.Items.Add(comboBox1.Text + " ->ZŁOTY");
+                            comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
                             textBox6.AppendText(item.mid.ToString());
                         }
                     }
                 }
             }
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            textBox1.Clear();
+            if (comboBox3.Items.Count > 0)
+            {
+                double SetPrice = (double)Convert.ToDecimal(textBox2.Text);
+                double SetValueToConvert = (double)Convert.ToDecimal(textBox6.Text);
+                var suma = Math.Round(SetPrice * SetValueToConvert, 4);
+                textBox1.AppendText(suma.ToString());
+            }
+            else if (comboBox2.Items.Count > 0)
+            {
+                double SetPrice = (double)Convert.ToDecimal(textBox2.Text);
+                double SetValueToConvert = (double)Convert.ToDecimal(textBox6.Text);
+                var suma = Math.Round(SetPrice / SetValueToConvert, 4);
+                textBox1.AppendText(suma.ToString());
+            }
+        }
+        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8 && e.KeyChar != 46)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (e.KeyChar == 46)
+            {
+                if ((sender as TextBox).Text.IndexOf(e.KeyChar) != -1)
+                    e.Handled = true;
+            }
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            comboBox2.Items.Clear();
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            comboBox3.Items.Clear();
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            comboBox2.Items.Clear();
+            comboBox3.Items.Clear();
+            textBox1.Clear();
+            textBox6.Clear();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void KursyWalut_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                this.Left += e.X - lastPoint.X;
+                this.Top += e.Y - lastPoint.Y;
+            }
+        }
+
+        private void KursyWalut_MouseDown(object sender, MouseEventArgs e)
+        {
+            lastPoint = new Point(e.X, e.Y);
+        }
+        Point lastPoint;
     }
-}
+    }
+
      
