@@ -54,8 +54,15 @@ namespace KursWalutNBPApi
             comboBox1.Items.Add("GBP - funt szterling");
             comboBox1.Items.Add("UAH - hrywna ");
             comboBox1.Items.Add("JPY - jen(Japonia)");
+            comboBox1.Items.Add("HUF - forint Węgry");
+            comboBox1.Items.Add("CZK - korona czeska");
+            comboBox1.Items.Add("DKK - korona duńska ");
+            comboBox1.Items.Add("ISK - korona islandzka");
             comboBox1.Items.Add("NOK - korona norweska");
             comboBox1.Items.Add("SEK - korona szwedzka");
+            comboBox1.Items.Add("NOK - korona norweska");
+            comboBox1.Items.Add("SEK - korona szwedzka");
+
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
