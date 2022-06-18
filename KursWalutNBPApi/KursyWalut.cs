@@ -66,7 +66,8 @@ namespace KursWalutNBPApi
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
-
+            textBox3.ReadOnly = true;
+            textBox3.Enabled = false;
         }
         private async void button2_Click(object sender, EventArgs e)
 
@@ -76,40 +77,59 @@ namespace KursWalutNBPApi
 
                 var url = "http://api.nbp.pl/api/.";
                 var table = "A";
-                var code = comboBox1.Text.Substring(0,3);
-                var date = "2022-06-10";
+                var code = comboBox1.Text.Substring(0, 3);
+                var date1 = DateTime.Today;
+                date1.Day.ToString();
+                date1.DayOfWeek.ToString();
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(url);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                HttpResponseMessage response = await client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}/");
-                if (response.IsSuccessStatusCode)
+                if (date1.DayOfWeek.ToString() is "Saturday")
                 {
-                    var Waluta = await response.Content.ReadAsStringAsync();
-                    var rates = JsonConvert.DeserializeObject<Rates>(Waluta);
-                    foreach (var item in rates.rates)
-                    {
+                    var Rdate = DateTime.Today.AddDays(-1);
+                    textBox3.Text = Rdate.ToString("yyyy-MM-dd");
+                }
+                else if (date1.DayOfWeek.ToString() is "Sunday")
+                {
+                    var Rdate = DateTime.Today.AddDays(-2);
+                    textBox3.Text = Rdate.ToString("yyyy-MM-dd");
+                }
+                else
+                {
+                    var Rdate = DateTime.Today;
+                    textBox3.Text = Rdate.ToString("yyyy-MM-dd");
+                }
 
-                        if (string.IsNullOrEmpty(textBox6.Text))
+                    HttpResponseMessage response = await client.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{textBox3.Text}/");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var Waluta = await response.Content.ReadAsStringAsync();
+                        var rates = JsonConvert.DeserializeObject<Rates>(Waluta);
+                        foreach (var item in rates.rates)
                         {
-                            textBox6.AppendText(item.mid.ToString());
-                            comboBox2.Items.Clear();
-                            comboBox3.Items.Clear();
-                            comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
-                            comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
-                        }
-                        else
-                        {
-                            textBox6.Clear();
-                            comboBox2.Items.Clear();
-                            comboBox3.Items.Clear();
-                            comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
-                            comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
-                            textBox6.AppendText(item.mid.ToString());
+
+                            if (string.IsNullOrEmpty(textBox6.Text))
+                            {
+                                textBox6.AppendText(item.mid.ToString());
+                                comboBox2.Items.Clear();
+                                comboBox3.Items.Clear();
+                                comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
+                                comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
+                            }
+                            else
+                            {
+                                textBox6.Clear();
+                                comboBox2.Items.Clear();
+                                comboBox3.Items.Clear();
+                                comboBox2.Items.Add("ZŁOTY -> " + comboBox1.Text);
+                                comboBox3.Items.Add(comboBox1.Text + " ->ZŁOTY");
+                                textBox6.AppendText(item.mid.ToString());
+                            }
                         }
                     }
                 }
             }
-        }
+        
 
         private void button4_Click(object sender, EventArgs e)
         {
