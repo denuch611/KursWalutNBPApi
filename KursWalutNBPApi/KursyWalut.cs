@@ -174,10 +174,12 @@ namespace KursWalutNBPApi
         }
         private void button1_Click(object sender, EventArgs e)
         {
+            
             comboBox2.Items.Clear();
             comboBox3.Items.Clear();
             textBox1.Clear();
             textBox6.Clear();
+            textBox3.Clear();
         }
 
         private void button3_Click(object sender, EventArgs e)
